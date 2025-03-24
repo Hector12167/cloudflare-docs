@@ -1,69 +1,21 @@
-import { readFile, writeFile } from "fs/promises";
-import { optimize } from "svgo";
-import glob from "fast-glob";
-import { formatBytes } from "../src/util/helpers";
-
-async function run() {
-	const start = performance.now();
-	const globs = ["src/**/*.svg"];
-
-	const files = await glob(globs);
-
-	if (files.length === 0) {
-		console.log("No SVG files found");
-		return;
-	}
-
-	console.log(`Optimizing ${files.length} SVG files`);
-
-	// track some stats for logging
-	let processed = 0;
-	let originalSize = 0;
-	let optimizedSize = 0;
-
-	for (const [index, filePath] of Object.entries(files)) {
-		console.log(
-			`[${Number(index) + 1} / ${files.length}] Optimizing ${filePath}`,
-		);
-		const content = await readFile(filePath, "utf8");
-		originalSize += content.length;
-		try {
-			const result = optimize(content, {
-				multipass: true,
-				// uses the default preset with the exception of disabling a few plugins that might introduce potential issues with specific CSS, JS targeting etc
-				plugins: [
-					{
-						name: "preset-default",
-						params: {
-							overrides: {
-								cleanupIds: false,
-								removeTitle: false,
-								removeViewBox: false,
-								removeHiddenElems: false,
-							},
-						},
-					},
-				],
-			});
-			console.log(
-				`\tOptimized ${filePath} from ${formatBytes(content.length)} to ${formatBytes(result.data.length)}`,
-			);
-			optimizedSize += result.data.length;
-			await writeFile(filePath, result.data);
-		} catch (err) {
-			console.error(`Error optimizing ${filePath}: ${err}`);
-		} finally {
-			processed++;
-		}
-	}
-
-	const end = performance.now();
-	const duration = end - start;
-	const seconds = Math.floor(duration / 1000);
-	console.log(`Optimized ${processed} SVG files in ${seconds}s`);
-	console.log(
-		`Original size: ~${formatBytes(originalSize)}, optimized size: ~${formatBytes(optimizedSize)}. Saved ~${formatBytes(originalSize - optimizedSize)}`,
-	);
-}
-
-run();
+cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/3 http://www.sat.gob.mx/sitio_internet/cfd/3/cfdv32.xsd " version="3.2" folio="58" fecha="2015-04-21T11:15:46" sello="Ydhw9Dcx2NEyDfERMSG22Nnmt+NAoZwnPbjPp0G18sojDNtmGV1NnT1xfM2apjttEJS72SVShRBv+DK/TZifdD7cTbTBhmsWZqff/+rfUzpTawQxrARDddgA2vAAOq07z0GM+u+sDpZ9vI+Ube07lKuFEwInszqOaZq4/+dLnEk9R0RcobfvcJGwwTbW6x1vykj06AueunsLJ7+Jw8a1vBfL5VeEjNwAU8I/pN6jJ/9WRNSATJ2aR0lNKRxYOZ4GouJnFMAucRR6aPuajBCujO/NhmeIso9UNxQDZxEVyLPdy3uoeOh1Eqv8tFj10q2Y/XuGL7wft9NKfu49Z/cbvQ==" formaDePago="PAGO EN UNA SOLA EXHIBICION" noCertificado="00001000000302666142" certificado="MIIE6zCCA9OgAwIBAgIUMDAwMDEwMDAwMDAzMDI2NjYxNDIwDQYJKoZIhvcNAQEFBQAwggGKMTgwNgYDVQQDDC9BLkMuIGRlbCBTZXJ2aWNpbyBkZSBBZG1pbmlzdHJhY2nDs24gVHJpYnV0YXJpYTEvMC0GA1UECgwmU2VydmljaW8gZGUgQWRtaW5pc3RyYWNpw7NuIFRyaWJ1dGFyaWExODA2BgNVBAsML0FkbWluaXN0cmFjacOzbiBkZSBTZWd1cmlkYWQgZGUgbGEgSW5mb3JtYWNpw7NuMR8wHQYJKoZIhvcNAQkBFhBhY29kc0BzYXQuZ29iLm14MSYwJAYDVQQJDB1Bdi4gSGlkYWxnbyA3NywgQ29sLiBHdWVycmVybzEOMAwGA1UEEQwFMDYzMDAxCzAJBgNVBAYTAk1YMRkwFwYDVQQIDBBEaXN0cml0byBGZWRlcmFsMRQwEgYDVQQHDAtDdWF1aHTDqW1vYzEVMBMGA1UELRMMU0FUOTcwNzAxTk4zMTUwMwYJKoZIhvcNAQkCDCZSZXNwb25zYWJsZTogQ2xhdWRpYSBDb3ZhcnJ1YmlhcyBPY2hvYTAeFw0xNDAxMjcyMzA2NTFaFw0xODAxMjcyMzA2NTFaMIGzMSQwIgYDVQQDExtSVUJFTiBHRVJBUkRPIEFMRkFSTyBHQVJDSUExJDAiBgNVBCkTG1JVQkVOIEdFUkFSRE8gQUxGQVJPIEdBUkNJQTEkMCIGA1UEChMbUlVCRU4gR0VSQVJETyBBTEZBUk8gR0FSQ0lBMRYwFAYDVQQtEw1BQUdSNTUwNjAzQUs0MRswGQYDVQQFExJBQUdSNTUwNjAzSE5MTFJCMDMxCjAIBgNVBAsTAU0wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCpYXgxIzdMsGJNyIRCbU83PWPVdkOYhFeeiXxN9nmU5/zltEsZNHTul/sxOOj00w56UY2G55k1x5K1PNbgUr997yzPAUo5BcVeAp2qWNtbSFZgZXJAOGdFRCw2FMSVE2hoDFMRr5jIpu1hmkvOBfxGIvOxNRFpcp4OcxVnarcyN37EOShwxS73uHTLc4fmOdmrqZD371iE+TbyYgKvQ3Tj0yh0gsnDIGqaMGaCZ6eILfHCDxSuXtWWVQCctSVYZW3dIG1l7/wvyscmYx+qsvRuXvp7yryfxiLJj5ZlfYw0GQUvW+guVPIxBImKuvFDP/e8lTP8euX95Hxv4sj0PX15AgMBAAGjHTAbMAwGA1UdEwEB/wQCMAAwCwYDVR0PBAQDAgbAMA0GCSqGSIb3DQEBBQUAA4IBAQAjshDS7nXasLRgaVBO4rFfiFGHZvXAiswVQfk5Ums723L9bkmIA5HaTNgnflsojZrhiiLiZJ0xsHH2vNKx/XIOORQGWKrOH5W9U+4WfCIOmVhhrGnYP5IaXosbBGaVaC3B5wvbZAHWlEP3d2rMPcWoionmrXRYMEhNA1hGmInG78CMtnqrrUSsacbcHpw4wNurYDPkJKPpb7MB6robcPODtrIeEUtNbFLbIEE4yiZUTx8a7ScDa+bu/KpOYwdCUJpmGVAeyaj6dNS2PxjuxWPvrLiUWcvjMI+UgX13QG3g+zRx6ZMwh6++hdhVACiWO0GOuTohs67OQx+6+o+5kJuF" subTotal="3200.00" TipoCambio="1.00" Moneda="MXN" total="3712.00" tipoDeComprobante="ingreso" metodoDePago="NO IDENTIFICADO" LugarExpedicion="MAR NEGRO 200 COL. AURORA SANTA CATARINA, NUEVO LEON, NUEVO LEON, C.P. 66378 ">
+<cfdi:Emisor rfc="AAGR550603AK4" nombre="RUBEN GERARDO ALFARO GARCIA">
+<cfdi:DomicilioFiscal calle="MAR NEGRO" noExterior="200" colonia="AURORA" localidad="SANTA CATARINA" municipio="NUEVO LEON" estado="NUEVO LEON" pais="MEXICO" codigoPostal="66378"/>
+<cfdi:ExpedidoEn calle="MAR NEGRO" noExterior="200" colonia="AURORA" localidad="SANTA CATARINA" municipio="NUEVO LEON" estado="NUEVO LEON" pais="MEXICO" codigoPostal="66378"/>
+<cfdi:RegimenFiscal Regimen="ACTIVIDAD EMPRESARIAL Y PROFESIONAL DE PERSONAS FISICAS"/>
+</cfdi:Emisor>
+<cfdi:Receptor tarjeta="4130980152901219" nombre="FUNDICION AGUILAS S.A. DE C.V. FUNDICION AGUILAS S.A. DE C.V.">
+<cfdi:Domicilio calle="GALEANA" noExterior="501" colonia="ZONA INDUSTRIAL" localidad="SANTA CATARINA" municipio="SANTA CATARINA" codigoPostal="66350" estado="NUEVO LEON" pais="MEXICO"/>
+</cfdi:Receptor>
+<cfdi:Conceptos>
+<cfdi:Concepto cantidad="1.00" unidad="1" noIdentificacion="000001" descripcion="PRESENTACION INSTITUCIONAL DE 5 PAYASOS" valorUnitario="3200.00" importe="3200.00"/>
+</cfdi:Conceptos>
+<cfdi:Impuestos totalImpuestosTrasladados="512.00">
+<cfdi:Traslados>
+<cfdi:Traslado impuesto="IVA" tasa="16.00" importe="512.00"/>
+</cfdi:Traslados>
+</cfdi:Impuestos>
+<cfdi:Complemento>
+<tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/TimbreFiscalDigital http://www.sat.gob.mx/sitio_internet/TimbreFiscalDigital/TimbreFiscalDigital.xsd" version="1.0" UUID="6E399CAC-7288-400C-9826-CBE10F0B24B2" noCertificadoSAT="00001000000301205071" FechaTimbrado="2025-03-21T18:27:20" selloCFD="Ydhw9Dcx2NEyDfERMSG22Nnmt+NAoZwnPbjPp0G18sojDNtmGV1NnT1xfM2apjttEJS72SVShRBv+DK/TZifdD7cTbTBhmsWZqff/+rfUzpTawQxrARDddgA2vAAOq07z0GM+u+sDpZ9vI+Ube07lKuFEwInszqOaZq4/+dLnEk9R0RcobfvcJGwwTbW6x1vykj06AueunsLJ7+Jw8a1vBfL5VeEjNwAU8I/pN6jJ/9WRNSATJ2aR0lNKRxYOZ4GouJnFMAucRR6aPuajBCujO/NhmeIso9UNxQDZxEVyLPdy3uoeOh1Eqv8tFj10q2Y/XuGL7wft9NKfu49Z/cbvQ==" selloSAT="eDAWuLBDEDxuK64jb6PHKRTENgQVl2zpNJwtTvNCnWYtgOknX5cpCGuuxZpPRgQdQJXJ0XfyH7mp9rgA+u6AM/pJj3VifZNz9Inhn3kIdWhP9kN0qEPveiRfIPeOd22dVEI29hN6tD7GcBXR1OwVqQVuFth4MI4QSIgh9Wjr498="/>
+</cfdi:Complemento>
+</cfdi:Comprobante>
